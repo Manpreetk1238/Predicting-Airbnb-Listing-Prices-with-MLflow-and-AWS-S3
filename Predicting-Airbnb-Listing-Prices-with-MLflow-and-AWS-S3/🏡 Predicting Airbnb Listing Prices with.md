@@ -1,141 +1,179 @@
-📘 Airbnb Price Prediction with MLflow & AWS S3
-📝 Project Overview
+** Predicting Airbnb Listing Prices with MLflow & AWS S3**
+** 1. Project Overview**
 
-This project builds an end-to-end machine learning pipeline to predict Airbnb nightly listing prices using real listing data. The workflow includes data retrieval from AWS S3, preprocessing, exploratory analysis, feature engineering, model training, evaluation, and MLflow experiment tracking. The goal is to deliver a clean, reproducible, and industry-standard pipeline for price prediction.
+This project builds a complete, reproducible machine learning pipeline that predicts Airbnb listing prices using AWS S3 for cloud-based data storage and MLflow for experiment tracking.
+The workflow includes data loading, cleaning, exploratory analysis, feature engineering, model training, experiment tracking, and registering the best model.
 
-🚀 Objectives
+** 2. Business Problem**
 
-Retrieve Airbnb dataset from AWS S3
+Airbnb listing prices vary widely even among comparable properties.
+The goal of this project is to help StayWise generate data-driven price recommendations by developing a regression model that predicts nightly prices based on key listing attributes, such as:
 
-Perform data cleaning, handling missing values, and outlier removal
+Location
 
-Create new features such as distance to city center and amenity counts
+Room type
 
-Build machine learning models to predict nightly price
+Reviews and host activity
 
-Track experiments using MLflow
+Amenities
 
-Register and compare models based on RMSE, MAE, and R²
+Distance to key city landmarks
 
-Provide visual insights through EDA and model evaluation plots
+This model supports hosts in setting competitive prices while improving overall platform performance.
 
+** 3. Project Architecture**
+AWS S3 (Raw Dataset)
+        ↓
+    Data Loading
+        ↓
+Data Cleaning & Processing
+        ↓
+   Exploratory Analysis
+        ↓
+  Feature Engineering
+        ↓
+  Model Development
+        ↓
+ MLflow Experiment Tracking
+        ↓
+     Model Evaluation
+        ↓
+ MLflow Model Registry
 
-☁️ 1. Data Source – AWS S3
+** 4. Dataset Description**
 
-The raw Airbnb data is stored in:
+The dataset contains information about Airbnb listings, including:
 
-s3://your-bucket-name/airbnb/raw_data/listings.csv
+Host details
 
+Neighbourhood group and coordinates
 
-You can download it using boto3 or s3fs:
+Room type and availability
 
-import pandas as pd
-df = pd.read_csv("s3://your-bucket-name/airbnb/raw_data/listings.csv")
+Reviews and listing history
 
-🧹 2. Data Cleaning & Preprocessing
+Engineered features such as capped price and distance to city center
 
-Key steps:
+The dataset required cleaning due to missing values, formatting inconsistencies, and outliers.
 
-Removed irrelevant columns
+** 5. AWS S3 Data Access**
 
-Cleaned missing values
+The raw CSV file is stored in an AWS S3 bucket and accessed directly using a cloud-compatible file system.
+Using S3 ensures scalability, version control, and reproducibility across environments.
 
-Capped extreme price outliers
+** 6. Data Cleaning**
 
-Fixed inconsistent datatypes
+Cleaning steps performed:
 
-Parsed dates and numerical fields
+Handled missing values in review columns
 
-🧩 3. Feature Engineering
+Converted date columns
 
-Created additional features to enhance model performance:
+Removed duplicate listings
 
-amenities_count (parsed amenity list)
+Applied price capping to reduce skewed distributions
 
-dist_to_center_km (approx distance to Manhattan center)
+Standardized formatting
 
-reviews_per_month_filled (filled missing values)
+** 7. Exploratory Data Analysis (EDA)**
 
-📊 4. Exploratory Data Analysis (EDA)
+EDA focused on understanding:
 
-Basic exploratory analysis was performed to understand distributions, correlations, and trends in the dataset.
-This includes:
+Price distribution
 
-Price distribution analysis
+Neighbourhood-based price variation
 
-Identifying skewness and extreme values
+Correlation between numerical features
 
-Understanding feature relationships
+Effects of room types and reviews
 
-Detecting patterns across neighbourhoods and room types
-🤖 5. Model Development
+Geographical pricing patterns
 
-Models trained:
+These insights guided feature engineering and model selection.
 
-Linear Regression
+** 8. Feature Engineering**
 
-Random Forest Regressor
+To enhance predictive power, several new features were created, including:
 
-Train/test split: 80/20
-Scaling applied where necessary.
+Parsed amenities list
 
-🧪 6. MLflow Experiment Tracking
+Count of total amenities
 
-Each model run logs:
+Approximate distance to city center
 
-Parameters
+Availability metrics
 
-Metrics (RMSE, MAE, R²)
+Capped price values
 
-Feature importance plots
+These engineered features improved model interpretability and accuracy.
 
-Trained model artifacts
+** 9. Model Development**
 
-Example MLflow code:
+Two regression models were developed and compared:
 
-with mlflow.start_run():
-    mlflow.log_params(params)
-    mlflow.log_metrics(metrics)
-    mlflow.sklearn.log_model(model, "model")
+Linear Regression – baseline model
 
+Random Forest Regressor – ensemble model with better performance
 
-MLflow UI displays:
+A train/test split was used, and a complete preprocessing pipeline handled encoding and scaling.
 
-Experiment comparisons
+** 10. MLflow Experiment Tracking**
 
-Run metrics
+MLflow was used to track:
 
-Registered best model
+Logged Parameters
 
-📈 7. Model Performance Metrics
-| Model              | RMSE        | MAE        | R²       |
-|-------------------|-------------|------------|----------|
-| Linear Regression | 9070.24     | 55.98      | 0.3614   |
-| Random Forest     | 8373.88     | 52.44      | 0.4104   |
+Model name
 
+Feature sets
 
-Random Forest performed better across all evaluation metrics.
+Training configurations
 
-🏁 Conclusion
+Logged Metrics
 
-This project demonstrates a complete machine learning pipeline integrated with AWS S3 and MLflow. The Random Forest model achieved the best accuracy and is registered as the final production candidate. The repository provides a reproducible, industry-level workflow suitable for scaling into a real pricing system.
+RMSE
 
-📦 How to Run
+MAE
 
-Clone the repo:
+R²
 
-git clone https://github.com/yourname/airbnb-price-prediction.git
+Artifacts
 
+Trained model files
 
-Install dependencies:
+Preprocessing pipeline
 
-pip install -r requirements.txt
+Metrics summary
 
+Insert MLflow Screenshots Here
 
-Start MLflow UI:
+MLflow experiment runs
 
-mlflow ui
+Metrics comparison
 
+Registered model page
 
-Run the Jupyter notebook.
+**📦 11. Model Registry**
+
+The best-performing model was:
+
+Versioned and stored in MLflow Model Registry
+
+Assigned a unique model version
+
+Ready for deployment with reproducible configurations
+
+**📉 12. Results & Key Insights**
+
+Key observations include:
+
+Distance to city center is a strong predictor of price
+
+Neighbourhood groups significantly influence pricing
+
+Random Forest outperformed Linear Regression
+
+Feature engineering improved model accuracy
+
+MLflow streamlined experiment comparison and tracking
 
