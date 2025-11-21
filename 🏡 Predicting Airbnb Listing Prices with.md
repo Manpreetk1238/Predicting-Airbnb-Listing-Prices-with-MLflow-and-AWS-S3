@@ -1,281 +1,152 @@
-🏡 Airbnb Price Prediction with MLflow and AWS S3
-⭐ 1. Project Overview
+📘 Airbnb Price Prediction with MLflow & AWS S3
+📝 Project Overview
 
-This project develops a complete, reproducible machine learning pipeline to predict Airbnb listing prices using AWS S3 for data storage and MLflow for experiment tracking.
+This project builds an end-to-end machine learning pipeline to predict Airbnb nightly listing prices using real listing data. The workflow includes data retrieval from AWS S3, preprocessing, exploratory analysis, feature engineering, model training, evaluation, and MLflow experiment tracking. The goal is to deliver a clean, reproducible, and industry-standard pipeline for price prediction.
 
-The workflow includes:
+🚀 Objectives
 
-Retrieving raw Airbnb data from S3
+Retrieve Airbnb dataset from AWS S3
 
-Cleaning & preprocessing noisy dataset
+Perform data cleaning, handling missing values, and outlier removal
 
-Exploratory data analysis (EDA)
+Create new features such as distance to city center and amenity counts
 
-Feature engineering (amenities, distance, reviews, etc.)
+Build machine learning models to predict nightly price
 
-Training multiple regression models
+Track experiments using MLflow
 
-Tracking all runs using MLflow
+Register and compare models based on RMSE, MAE, and R²
 
-Registering the best model in the MLflow Model Registry
+Provide visual insights through EDA and model evaluation plots
 
-Structuring the project for production-grade reproducibility
+📂 Repository Structure
+airbnb-price-prediction/
+│
+├── notebook/
+│   └── index.ipynb
+│
+├── data/            ← (empty, dataset stored in S3)
+├── images/          ← plots & screenshots
+│
+├── requirements.txt
+├── README.md
+└── .gitignore
 
-📌 2. Business Problem
+☁️ 1. Data Source – AWS S3
 
-Listing prices vary widely even among similar properties.
-StayWise aims to:
+The raw Airbnb data is stored in:
 
-Provide hosts with smart, data-driven price recommendations
-
-Improve revenue predictability
-
-Increase platform competitiveness
-
-This model predicts optimal nightly prices based on:
-
-Location
-
-Room type
-
-Reviews
-
-Host activity
-
-Amenities
-
-Distance to city center
-
-🗂️ 3. Project Architecture
-AWS S3 (Raw Dataset)
-         ↓
- Data Loading (boto3 / s3fs)
-         ↓
- Data Cleaning & Processing
-         ↓
- Exploratory Data Analysis (EDA)
-         ↓
- Feature Engineering
-         ↓
- Model Training (LR, RF, XGBoost)
-         ↓
- MLflow Experiment Tracking
-         ↓
- Model Evaluation
-         ↓
- MLflow Model Registry (Best Model)
-
-📁 4. Dataset Description
-
-Key attributes in the dataset:
-
-id
-
-name
-
-host_id
-
-host_name
-
-neighbourhood_group
-
-neighbourhood
-
-latitude
-
-longitude
-
-room_type
-
-price
-
-minimum_nights
-
-number_of_reviews
-
-last_review
-
-reviews_per_month
-
-calculated_host_listings_count
-
-availability_365
-
-price_capped (engineered)
-
-The dataset contains missing values, inconsistencies, and outliers — all of which are processed in the pipeline.
-
-☁️ 5. AWS S3 Data Access
-Example S3 Path
 s3://your-bucket-name/airbnb/raw_data/listings.csv
 
-Load Data from S3
+
+You can download it using boto3 or s3fs:
+
 import pandas as pd
 df = pd.read_csv("s3://your-bucket-name/airbnb/raw_data/listings.csv")
 
-🧹 6. Data Cleaning
-Issues handled:
+🧹 2. Data Cleaning & Preprocessing
 
-Missing values (reviews_per_month, last_review)
+Key steps:
 
-Dropping duplicates
+Removed irrelevant columns
 
-Converting data types
+Cleaned missing values
 
-Treating outliers
+Capped extreme price outliers
 
-Capping price with price_capped
+Fixed inconsistent datatypes
 
-Example Code
-df['reviews_per_month'] = df['reviews_per_month'].fillna(0)
-df['last_review'] = pd.to_datetime(df['last_review'], errors='coerce')
-df.drop_duplicates(inplace=True)
-df['price_capped'] = df['price'].clip(0, 500)
+Parsed dates and numerical fields
 
-📊 7. Exploratory Data Analysis (EDA)
+🧩 3. Feature Engineering
 
-EDA focused on price distribution, spatial patterns, and review behavior.
+Created additional features to enhance model performance:
 
-Plots Included:
+amenities_count (parsed amenity list)
 
-Price Distribution
+dist_to_center_km (approx distance to Manhattan center)
 
-Boxplot: Price by Neighbourhood Group
+reviews_per_month_filled (filled missing values)
 
-Correlation Heatmap
+📊 4. Exploratory Data Analysis (EDA)
 
-Scatter Plot: Latitude–Longitude vs Price
+Basic exploratory analysis was performed to understand distributions, correlations, and trends in the dataset.
+This includes:
 
-Example Code
-plt.hist(df['price_capped'], bins=50)
-plt.title("Distribution of Capped Price")
-plt.xlabel("Price")
-plt.ylabel("Frequency")
+Price distribution analysis
 
+Identifying skewness and extreme values
 
-🧠 8. Feature Engineering
-Engineered Features:
+Understanding feature relationships
 
-amenities_list
+Detecting patterns across neighbourhoods and room types
+🤖 5. Model Development
 
-amenities_count
-
-dist_to_center_km
-
-availability_indicator
-
-price_capped
-
-Example: Distance Feature
-def approx_distance(lat, lon, c_lat=40.7128, c_lon=-74.0060):
-    return ((lat - c_lat)**2 + (lon - c_lon)**2)**0.5 * 111
-
-df['dist_to_center_km'] = approx_distance(df['latitude'], df['longitude'])
-
-Example: Amenities Parsing
-def parse_amenities(a):
-    if pd.isna(a): 
-        return []
-    s = a.replace("'", "").replace('"', "").strip("[]")
-    return [i.strip() for i in s.split(",") if i.strip()]
-
-df["amenities_list"] = df["amenities"].map(parse_amenities)
-df["amenities_count"] = df["amenities_list"].apply(len)
-
-🤖 9. Model Development
-
-Trained models include:
+Models trained:
 
 Linear Regression
 
 Random Forest Regressor
 
-XGBoost Regressor
+Train/test split: 80/20
+Scaling applied where necessary.
 
-Train-Test Split
-from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+🧪 6. MLflow Experiment Tracking
 
-Preprocessing Pipeline
+Each model run logs:
 
-One-hot encoding of categorical variables
+Parameters
 
-Scaling numeric values
+Metrics (RMSE, MAE, R²)
 
-Combining into a full sklearn Pipeline
+Feature importance plots
 
-📈 10. MLflow Experiment Tracking
+Trained model artifacts
 
-Every model run logs:
+Example MLflow code:
 
-Parameters Logged
-
-Model name
-
-Hyperparameters
-
-Feature list
-
-Metrics Logged
-
-RMSE
-
-MAE
-
-R² Score
-
-Artifacts Logged
-
-Plots
-
-Model pickle file
-
-Preprocessing pipeline
-
-Example MLflow Code
 with mlflow.start_run():
-    mlflow.log_param("model", "RandomForest")
-    mlflow.log_metrics({"rmse": rmse, "mae": mae, "r2": r2})
+    mlflow.log_params(params)
+    mlflow.log_metrics(metrics)
     mlflow.sklearn.log_model(model, "model")
 
-MLflow UI (Insert Your Screenshots Here)
-assets/mlflow_experiment.png
-assets/mlflow_metrics.png
-assets/mlflow_registry.png
 
-📦 11. Model Registry
+MLflow UI displays:
 
-The best model was:
+Experiment comparisons
 
-Registered in MLflow Model Registry
+Run metrics
 
-Assigned a unique version
+Registered best model
 
-Tagged with metadata
-
-Ready for deployment
-
-📉 12. Results & Insights
-Key Findings
-
-Distance to the city center strongly affects price
-
-Neighbourhood groups show significant variation
-
-XGBoost & Random Forest outperform Linear Regression
-
-Feature engineering improves model accuracy
+📈 7. Model Performance Metrics
+| Model              | RMSE        | MAE        | R²       |
+|-------------------|-------------|------------|----------|
+| Linear Regression | 9070.24     | 55.98      | 0.3614   |
+| Random Forest     | 8373.88     | 52.44      | 0.4104   |
 
 
+Random Forest performed better across all evaluation metrics.
+
+🏁 Conclusion
+
+This project demonstrates a complete machine learning pipeline integrated with AWS S3 and MLflow. The Random Forest model achieved the best accuracy and is registered as the final production candidate. The repository provides a reproducible, industry-level workflow suitable for scaling into a real pricing system.
+
+📦 How to Run
+
+Clone the repo:
+
+git clone https://github.com/yourname/airbnb-price-prediction.git
 
 
-▶️ 13. How to Run the Project
-Step 1 — Install Dependencies
+Install dependencies:
+
 pip install -r requirements.txt
 
-Step 2 — Start MLflow UI
+
+Start MLflow UI:
+
 mlflow ui
 
-Step 3 — Run Training
-python src/train_model.py
 
+Run the Jupyter notebook.
