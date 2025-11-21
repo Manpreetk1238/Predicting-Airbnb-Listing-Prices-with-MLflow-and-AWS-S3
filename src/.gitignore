@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Environments
+venv/
+.env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# MLflow logs
+mlruns/
+
+# Data
+data/
+*.csv
+*.parquet
+
+# AWS credentials
+.aws/
+credentials
+config
+
+# VSCode settings
+.vscode/
+
