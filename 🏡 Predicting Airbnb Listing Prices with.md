@@ -19,18 +19,6 @@ Register and compare models based on RMSE, MAE, and R²
 
 Provide visual insights through EDA and model evaluation plots
 
-📂 Repository Structure
-airbnb-price-prediction/
-│
-├── notebook/
-│   └── index.ipynb
-│
-├── data/            ← (empty, dataset stored in S3)
-├── images/          ← plots & screenshots
-│
-├── requirements.txt
-├── README.md
-└── .gitignore
 
 ☁️ 1. Data Source – AWS S3
 
@@ -150,3 +138,4 @@ mlflow ui
 
 
 Run the Jupyter notebook.
+
